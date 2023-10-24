@@ -26,7 +26,6 @@ FILE_PATH = 'lab1_groups_2023_edit.xlsx'
 
 MACRO_GROUPS = ['A1', 'B1', 'A2', 'B2']
 ROOM_GROUPS = [f'{grp}-{room}' for grp in MACRO_GROUPS for room in range(1, 4)]
-GROUPS = [f'{grp}-{room}-{turn}' for grp in MACRO_GROUPS for room in range(1, 4) for turn in range(1, 3)]
 
 logger.info('Reading in group changes...')
 GROUP_CHANGES = {}
@@ -170,7 +169,7 @@ class DataBase(dict):
     def assign_groups(self, file_path : str = None) -> dict:
         """Assign the students to the group.
         """
-        count_dict = {grp : 0 for grp in GROUPS}
+        count_dict = {grp : 0 for grp in ROOM_GROUPS}
         for student in self.values():
             if student.group is not None:
                 continue
@@ -196,8 +195,7 @@ class DataBase(dict):
             writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
             for group in ROOM_GROUPS:
                 logger.info(f'Writing group {group}...')
-                groups = [f'{group}-{turn}' for turn in range(1, 3)]
-                students = [student for student in self.values() if student.group in groups]
+                students = [student for student in self.values() if student.group == group]
                 data = {
                     'Nome': [student.name for student in students],
                     'Cognome': [student.surname for student in students],
@@ -207,7 +205,11 @@ class DataBase(dict):
                 }
                 df = pd.DataFrame(data)
                 df = df.sort_values(['Gruppo', 'Cognome'])
-                df.to_excel(writer, sheet_name=group)
+                df.to_excel(writer, sheet_name=group, index=False)
+                sheet = writer.sheets[group]
+                sheet.set_column('A:B', 15)
+                sheet.set_column('C:C', 12)
+                sheet.set_column('D:D', 35)
             writer.save()
             logger.info('Done.')
         return count_dict
