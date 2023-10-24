@@ -187,9 +187,12 @@ class DataBase(dict):
             companion.group = group
             count_dict[group] += 1
         logger.info(f'Final group numerosity: {count_dict}')
+        total_students = 0
         for macro_group in MACRO_GROUPS:
             counts = sum(self.dict_subset(count_dict, macro_group).values())
             logger.info(f'{macro_group} -> {counts} students')
+            total_students += counts
+        logger.info(f'Total number of students: {total_students}')
         if file_path is not None:
             logger.info(f'Writing output group file to {file_path}')
             writer = pd.ExcelWriter(file_path, engine='xlsxwriter')
