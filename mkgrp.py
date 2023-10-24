@@ -22,7 +22,7 @@ from loguru import logger
 import pandas as pd
 
 
-FILE_PATH = 'lab1_groups_edit.xlsx'
+FILE_PATH = 'lab1_groups_2023_edit.xlsx'
 
 MACRO_GROUPS = ['A1', 'B1', 'A2', 'B2']
 ROOM_GROUPS = [f'{grp}-{room}' for grp in MACRO_GROUPS for room in range(1, 4)]
@@ -32,7 +32,7 @@ logger.info('Reading in group changes...')
 GROUP_CHANGES = {}
 df = pd.read_excel(FILE_PATH, sheet_name='Cambi')
 for _, row in df.iterrows():
-    GROUP_CHANGES[row['Matricola']] = row['Gruppo']
+    GROUP_CHANGES[row['Matricola']] = row['Gruppo nuovo']
 logger.info(f'Done: {GROUP_CHANGES}')
 
 
@@ -55,12 +55,14 @@ class Student:
     def __post_init__(self) -> None:
         """Post initialization.
         """
+        if self.macro_group not in MACRO_GROUPS:
+            raise RuntimeError(f'Invalid macro group {self.macro_group} for {self.full_name()}')
         try:
             expected = GROUP_CHANGES[self.identifier]
         except KeyError:
             expected = MACRO_GROUPS[self.identifier % 4]
         if self.macro_group != expected:
-            logger.error(f'Group for {self.full_name()} is {self.macro_group} instead of {expected}')
+            logger.error(f'Group for {self.full_name()} ({self.identifier}) is {self.macro_group} instead of {expected}')
 
     def full_name(self) -> str:
         """Return the full name.
@@ -216,4 +218,4 @@ class DataBase(dict):
 if __name__ == '__main__':
     db = DataBase()
     db.check_companions()
-    db.assign_groups('gruppi_lab1_2022.xlsx')
+    db.assign_groups('gruppi_lab1_2023.xlsx')
